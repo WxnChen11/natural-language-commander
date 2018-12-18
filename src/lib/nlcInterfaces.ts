@@ -87,3 +87,9 @@ export interface IAskOptions {
   data?: any;
   userId?: string;
 }
+
+export interface HandleCommandResult { 
+  name: string;
+  slots: any[];
+}
+

@@ -7,7 +7,8 @@ import {
   IHandleCommandOptions,
   IAskOptions,
   IIntent,
-  IQuestion
+  IQuestion,
+  HandleCommandResult
 } from "./lib/nlcInterfaces";
 import Matcher from "./lib/Matcher";
 import Question from "./lib/Question";
@@ -323,12 +324,14 @@ class NaturalLanguageCommander {
 
     // Delay to ensure this is async.
     delay(() => {
-      const intentName: string = this.handleNormalCommand(data, command);
+      const commandResult: HandleCommandResult = this.handleNormalCommand(data, command);
+
+      console.log('FOUND COMMAND', commandResult)
 
       // If the command was successful:
-      if (intentName) {
+      if (commandResult.name) {
         // Resolve with the intent name, for logging.
-        deferred.resolve(intentName);
+        deferred.resolve(commandResult);
         return;
       }
 
@@ -471,9 +474,10 @@ class NaturalLanguageCommander {
   }
 
   /** Handle a command normally. */
-  private handleNormalCommand(data: any, command: string): string {
+  private handleNormalCommand(data: any, command: string): HandleCommandResult {
     /** Flag if there was a match */
     let foundMatchName: string;
+    let foundSlots: any[];
 
     // Handle a normal command.
     _.forEach(this.matchers, (matcher: Matcher) => {
@@ -489,6 +493,7 @@ class NaturalLanguageCommander {
 
         // Call the callback with the slot values in order.
         matcher.intent.callback.apply(null, orderedSlots);
+        foundSlots = orderedSlots;
         // Flag that a match was found.
         foundMatchName = matcher.intent.intent;
         // Exit early.
@@ -496,7 +501,10 @@ class NaturalLanguageCommander {
       }
     });
 
-    return foundMatchName;
+    return {
+      name: foundMatchName,
+      slots: foundSlots
+    };
   }
 }
 
