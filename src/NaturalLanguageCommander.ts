@@ -326,8 +326,6 @@ class NaturalLanguageCommander {
     delay(() => {
       const commandResult: HandleCommandResult = this.handleNormalCommand(data, command);
 
-      console.log('FOUND COMMAND', commandResult)
-
       // If the command was successful:
       if (commandResult.name) {
         // Resolve with the intent name, for logging.
