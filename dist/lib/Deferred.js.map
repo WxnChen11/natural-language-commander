@@ -1,0 +1,1 @@
+{"version":3,"file":"Deferred.js","sourceRoot":"","sources":["../../src/lib/Deferred.ts"],"names":[],"mappings":";;AAEA;IAKE;QACE,IAAI,CAAC,OAAO,GAAG,IAAI,OAAO,CAAC,CAAC,OAAiB,EAAE,MAAgB,EAAE,EAAE;YACjE,IAAI,CAAC,OAAO,GAAG,OAAO,CAAC;YACvB,IAAI,CAAC,MAAM,GAAG,MAAM,CAAC;QACvB,CAAC,CAAC,CAAC;IACL,CAAC;CACF;AAED,kBAAe,QAAQ,CAAC"}
