@@ -11,15 +11,15 @@
   },
   "main": "dist/nlc.js",
   "scripts": {
-    "build": "tsc && browserify ./dist/NaturalLanguageCommander.js -t [ babelify --presets [ es2015 ] --plugins [ transform-runtime ] ] --standalone NLC | derequire > dist/nlc.js && uglifyjs dist/nlc.js -o dist/nlc.min.js",
-    "format": "yarn format-tslint && yarn format-prettier",
-    "format-prettier": "prettier --write \"**/*.{ts,json}\"",
-    "format-tslint": "tslint -p . --config tslint.json",
-    "postbuild": "rimraf dist/test",
+    "test": "mocha --opts ./mocha.opts",
+    "build":
+      "tsc && browserify ./dist/NaturalLanguageCommander.js -t [ babelify --presets [ es2015 ] --plugins [ transform-runtime ] ] --standalone NLC | derequire > dist/nlc.js && uglifyjs dist/nlc.js -o dist/nlc.min.js",
     "prebuild": "rimraf dist && mkdirp dist",
+    "postbuild": "rimraf dist/test",
     "prepublish": "npm run build",
-    "postinstall": "rimraf dist && mkdirp dist && npm run build",
-    "test": "mocha --opts ./mocha.opts"
+    "format": "yarn format-tslint && yarn format-prettier",
+    "format-tslint": "tslint -p . --config tslint.json",
+    "format-prettier": "prettier --write \"**/*.{ts,json}\""
   },
   "keywords": [
     "natural language processing",
