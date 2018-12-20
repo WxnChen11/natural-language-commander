@@ -17,7 +17,6 @@
     "format-tslint": "tslint -p . --config tslint.json",
     "postbuild": "rimraf dist/test",
     "prebuild": "rimraf dist && mkdirp dist",
-    "preinstall": "npm install",
     "prepublish": "npm run build",
     "postinstall": "rimraf dist && mkdirp dist && npm run build",
     "test": "mocha --opts ./mocha.opts"
