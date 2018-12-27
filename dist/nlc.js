@@ -276,7 +276,7 @@ var NaturalLanguageCommander = function () {
             delay(function () {
                 var commandResult = _this2.handleNormalCommand(data, command);
                 // If the command was successful:
-                if (commandResult.name) {
+                if (commandResult && commandResult.length > 0) {
                     // Resolve with the intent name, for logging.
                     deferred.resolve(commandResult);
                     return;
@@ -406,11 +406,12 @@ var NaturalLanguageCommander = function () {
     }, {
         key: "handleNormalCommand",
         value: function handleNormalCommand(data, command) {
-            /** Flag if there was a match */
-            var foundMatchName = void 0;
-            var foundSlots = void 0;
+            var matchesAndSlots = [];
             // Handle a normal command.
             _.forEach(this.matchers, function (matcher) {
+                /** Flag if there was a match */
+                var foundMatchName = void 0;
+                var foundSlots = void 0;
                 /** The slots from the match or [], if the match was found. */
                 var orderedSlots = matcher.check(command);
                 // If orderedSlots is undefined, the match failed.
@@ -424,14 +425,13 @@ var NaturalLanguageCommander = function () {
                     foundSlots = orderedSlots;
                     // Flag that a match was found.
                     foundMatchName = matcher.intent.intent;
-                    // Exit early.
-                    return false;
+                    matchesAndSlots.push({
+                        name: foundMatchName,
+                        slots: foundSlots
+                    });
                 }
             });
-            return {
-                name: foundMatchName,
-                slots: foundSlots
-            };
+            return matchesAndSlots;
         }
     }]);
     return NaturalLanguageCommander;

@@ -223,7 +223,7 @@ class NaturalLanguageCommander {
         delay(() => {
             const commandResult = this.handleNormalCommand(data, command);
             // If the command was successful:
-            if (commandResult.name) {
+            if (commandResult && commandResult.length > 0) {
                 // Resolve with the intent name, for logging.
                 deferred.resolve(commandResult);
                 return;
@@ -336,11 +336,12 @@ class NaturalLanguageCommander {
     }
     /** Handle a command normally. */
     handleNormalCommand(data, command) {
-        /** Flag if there was a match */
-        let foundMatchName;
-        let foundSlots;
+        const matchesAndSlots = [];
         // Handle a normal command.
         _.forEach(this.matchers, (matcher) => {
+            /** Flag if there was a match */
+            let foundMatchName;
+            let foundSlots;
             /** The slots from the match or [], if the match was found. */
             const orderedSlots = matcher.check(command);
             // If orderedSlots is undefined, the match failed.
@@ -354,14 +355,13 @@ class NaturalLanguageCommander {
                 foundSlots = orderedSlots;
                 // Flag that a match was found.
                 foundMatchName = matcher.intent.intent;
-                // Exit early.
-                return false;
+                matchesAndSlots.push({
+                    name: foundMatchName,
+                    slots: foundSlots
+                });
             }
         });
-        return {
-            name: foundMatchName,
-            slots: foundSlots
-        };
+        return matchesAndSlots;
     }
 }
 module.exports = NaturalLanguageCommander;
