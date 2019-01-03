@@ -1,7 +1,6 @@
 "use strict";
 const _ = require("lodash");
 const Deferred_1 = require("./lib/Deferred");
-const standardSlots = require("./lib/standardSlots");
 const Matcher_1 = require("./lib/Matcher");
 const Question_1 = require("./lib/Question");
 const constants_1 = require("./lib/constants");
@@ -127,7 +126,7 @@ class NaturalLanguageCommander {
         // Noop the notFoundCallback.
         this.notFoundCallback = () => { };
         // Add the standard slot types.
-        _.forOwn(standardSlots, this.addSlotType);
+        // _.forOwn(standardSlots, this.addSlotType);
     }
     /**
      * Register a callback to be called when a command doesn't match.
@@ -336,16 +335,19 @@ class NaturalLanguageCommander {
     }
     /** Handle a command normally. */
     handleNormalCommand(data, command) {
-        const matchesAndSlots = [];
+        let matchesAndSlots = {};
+        let shouldAddWholeMatches = true;
         // Handle a normal command.
         _.forEach(this.matchers, (matcher) => {
             /** Flag if there was a match */
             let foundMatchName;
             let foundSlots;
             /** The slots from the match or [], if the match was found. */
-            const orderedSlots = matcher.check(command);
-            // If orderedSlots is undefined, the match failed.
-            if (orderedSlots) {
+            const matchResults = matcher.check(command);
+            // If matchResults is undefined, the match failed.
+            if (matchResults) {
+                const orderedSlots = matchResults.slots;
+                const wholeMatch = matchResults.whole_match;
                 if (data) {
                     // Add the data as the first arg, if specified.
                     orderedSlots.unshift(data);
@@ -355,13 +357,24 @@ class NaturalLanguageCommander {
                 foundSlots = orderedSlots;
                 // Flag that a match was found.
                 foundMatchName = matcher.intent.intent;
-                matchesAndSlots.push({
-                    name: foundMatchName,
-                    slots: foundSlots
-                });
+                // First encounter of an non-whole match, wipe map
+                if (!wholeMatch && shouldAddWholeMatches) {
+                    matchesAndSlots = {};
+                    shouldAddWholeMatches = false;
+                }
+                if (!wholeMatch || (wholeMatch && shouldAddWholeMatches)) {
+                    const slots_length = foundSlots.reduce((a, c) => a + c ? c.length : 0, 0);
+                    let old_slots_length = 0;
+                    if (matchesAndSlots.foundMatchName) {
+                        old_slots_length = matchesAndSlots.foundMatchName.slots.reduce((a, c) => a + c ? c.length : 0, 0);
+                    }
+                    if (!matchesAndSlots.foundMatchName || slots_length < old_slots_length) {
+                        matchesAndSlots[foundMatchName] = foundSlots;
+                    }
+                }
             }
         });
-        return matchesAndSlots;
+        return _.map(matchesAndSlots, (slots, name) => ({ name, slots }));
     }
 }
 module.exports = NaturalLanguageCommander;

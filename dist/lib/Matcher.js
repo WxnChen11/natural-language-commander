@@ -84,6 +84,7 @@ class Matcher {
         if (this.slotMapping.length === 0) {
             return [];
         }
+        let wholeMatch = true;
         // Remove the first, global match, we don't need it.
         matches.shift();
         // Flag if there was a bad match.
@@ -93,6 +94,9 @@ class Matcher {
         // Check each slot to see if it matches.
         _.forEach(this.slotMapping, (slot, i) => {
             const slotText = matches[i];
+            if (slotText && slotText.length !== command.length) {
+                wholeMatch = false;
+            }
             const slotData = this.checkSlotMatch(slotText, slot.type);
             // If the slot didn't match, note the bad match, and exit early.
             // Allow the value 0 to match.
@@ -105,7 +109,10 @@ class Matcher {
         });
         // If there were no bad maches, return the slots. Otherwise return nothing.
         if (!badMatch) {
-            return this.getOrderedSlots(matchedSlots);
+            return {
+                slots: this.getOrderedSlots(matchedSlots),
+                whole_match: wholeMatch
+            };
         }
     }
     // ==============================
@@ -172,6 +179,18 @@ class Matcher {
         }
         const slotType = this.slotTypes[slotTypeName];
         const slotOptions = slotType.matcher;
+        const castedSlotRe = /\[([^\[\]]+)\:([^\[\]]+)\]/g;
+        const match = castedSlotRe.exec(slotText);
+        if (match) {
+            const rawText = match[1];
+            const castedType = match[2];
+            if (castedType.toLowerCase() !== slotType.type.toLowerCase()) {
+                return; // Return undefined if casted types dont match
+            }
+            else {
+                return rawText;
+            }
+        }
         // Match the slot based on the type.
         if (_.isRegExp(slotOptions)) {
             return this.getRegexpSlot(slotText, slotOptions);

@@ -46,9 +46,6 @@ class NaturalLanguageCommander {
     this.matchers = [];
     // Noop the notFoundCallback.
     this.notFoundCallback = () => {};
-
-    // Add the standard slot types.
-    _.forOwn(standardSlots, this.addSlotType);
   }
 
   /**
@@ -474,7 +471,8 @@ class NaturalLanguageCommander {
   /** Handle a command normally. */
   private handleNormalCommand(data: any, command: string): any[] {
 
-    const matchesAndSlots : any[] = [];
+    let matchesAndSlots : any = {};
+    let shouldAddWholeMatches: boolean = true
 
     // Handle a normal command.
     _.forEach(this.matchers, (matcher: Matcher) => {
@@ -483,10 +481,13 @@ class NaturalLanguageCommander {
       let foundSlots: any[];
 
       /** The slots from the match or [], if the match was found. */
-      const orderedSlots: any[] = matcher.check(command);
+      const matchResults: any = matcher.check(command)
 
-      // If orderedSlots is undefined, the match failed.
-      if (orderedSlots) {
+      // If matchResults is undefined, the match failed.
+      if (matchResults) {
+        const orderedSlots: any = matchResults.slots
+        const wholeMatch: any = matchResults.whole_match
+
         if (data) {
           // Add the data as the first arg, if specified.
           orderedSlots.unshift(data);
@@ -498,14 +499,26 @@ class NaturalLanguageCommander {
         // Flag that a match was found.
         foundMatchName = matcher.intent.intent;
 
-        matchesAndSlots.push({
-          name: foundMatchName,
-          slots: foundSlots
-        })
+        // First encounter of an non-whole match, wipe map
+        if (!wholeMatch && shouldAddWholeMatches) {
+          matchesAndSlots = {}
+          shouldAddWholeMatches = false
+        }
+        
+        if (!wholeMatch || (wholeMatch && shouldAddWholeMatches)) {
+          const slots_length = foundSlots.reduce((a, c) => a + c ? c.length : 0, 0)
+          let old_slots_length = 0
+          if (matchesAndSlots.foundMatchName) {
+            old_slots_length = matchesAndSlots.foundMatchName.slots.reduce((a, c) => a + c ? c.length : 0, 0)
+          }
+
+          if (!matchesAndSlots.foundMatchName || slots_length < old_slots_length) {
+            matchesAndSlots[foundMatchName] = foundSlots
+          }
+        }
       }
     });
-
-    return matchesAndSlots;
+    return _.map( matchesAndSlots, (slots, name) => ({name, slots}) );
   }
 }
 

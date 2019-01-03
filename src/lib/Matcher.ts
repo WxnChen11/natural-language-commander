@@ -113,7 +113,7 @@ class Matcher {
    * @param command - the command to match against.
    * @returns An ordered array of slot matches. Undefined if no match.
    */
-  public check(command: string): any[] {
+  public check(command: string): any {
     /** The matches for the slots. */
     const matches = command.match(this.regExp);
 
@@ -128,6 +128,7 @@ class Matcher {
       return [];
     }
 
+    let wholeMatch = true;
     // Remove the first, global match, we don't need it.
     matches.shift();
 
@@ -139,6 +140,9 @@ class Matcher {
     // Check each slot to see if it matches.
     _.forEach(this.slotMapping, (slot: IIntentSlot, i: number) => {
       const slotText = matches[i];
+      if (slotText && slotText.length !== command.length) {
+        wholeMatch = false
+      }
       const slotData: any = this.checkSlotMatch(slotText, slot.type);
 
       // If the slot didn't match, note the bad match, and exit early.
@@ -154,7 +158,10 @@ class Matcher {
 
     // If there were no bad maches, return the slots. Otherwise return nothing.
     if (!badMatch) {
-      return this.getOrderedSlots(matchedSlots);
+      return {
+        slots: this.getOrderedSlots(matchedSlots),
+        whole_match: wholeMatch
+      }
     }
   }
 
@@ -242,6 +249,20 @@ class Matcher {
 
     const slotType: ISlotType = this.slotTypes[slotTypeName];
     const slotOptions: SlotTypeItem = slotType.matcher;
+
+    const castedSlotRe = /\[([^\[\]]+)\:([^\[\]]+)\]/g
+    const match = castedSlotRe.exec(slotText)
+
+    if (match) {
+      const rawText = match[1]
+      const castedType = match[2]
+
+      if (castedType.toLowerCase() !== slotType.type.toLowerCase()) {
+        return // Return undefined if casted types dont match
+      } else {
+        return rawText
+      }
+    }
 
     // Match the slot based on the type.
     if (_.isRegExp(slotOptions)) {

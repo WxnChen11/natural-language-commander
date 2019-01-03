@@ -25,7 +25,7 @@ declare class Matcher {
      * @param command - the command to match against.
      * @returns An ordered array of slot matches. Undefined if no match.
      */
-    check(command: string): any[];
+    check(command: string): any;
     /**
      * For any word in the utterance that has common misspellings, replace it with
      * a group that catches them.
