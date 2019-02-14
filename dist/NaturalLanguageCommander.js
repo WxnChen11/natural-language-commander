@@ -125,8 +125,6 @@ class NaturalLanguageCommander {
         this.matchers = [];
         // Noop the notFoundCallback.
         this.notFoundCallback = () => { };
-        // Add the standard slot types.
-        // _.forOwn(standardSlots, this.addSlotType);
     }
     /**
      * Register a callback to be called when a command doesn't match.
@@ -346,7 +344,7 @@ class NaturalLanguageCommander {
             const matchResults = matcher.check(command);
             // If matchResults is undefined, the match failed.
             if (matchResults) {
-                const orderedSlots = matchResults.slots;
+                const orderedSlots = matchResults.slots || [];
                 const wholeMatch = matchResults.whole_match;
                 if (data) {
                     // Add the data as the first arg, if specified.
