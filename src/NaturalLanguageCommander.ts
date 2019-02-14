@@ -485,7 +485,7 @@ class NaturalLanguageCommander {
 
       // If matchResults is undefined, the match failed.
       if (matchResults) {
-        const orderedSlots: any = matchResults.slots
+        const orderedSlots: any = matchResults.slots || []
         const wholeMatch: any = matchResults.whole_match
 
         if (data) {
